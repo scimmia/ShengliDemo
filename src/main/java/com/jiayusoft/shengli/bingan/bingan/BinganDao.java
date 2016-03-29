@@ -3,6 +3,7 @@ package com.jiayusoft.shengli.bingan.bingan;
 import com.jiayusoft.shengli.bingan.utils.DataBaseUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -169,6 +170,10 @@ public class BinganDao {
                 sql.append(" and jzrq>=to_date('")
                         .append(DateFormatUtils.ISO_DATE_FORMAT.format(new Date()))
                         .append(" 00:00:00','YYYY-MM-DD hh24:mi:ss')");
+            }else{
+                sql.append(" and sqrq>=to_date('")
+                        .append(DateFormatUtils.ISO_DATE_FORMAT.format(DateUtils.addMonths(new Date(),-1)))
+                        .append(" 00:00:00','YYYY-MM-DD hh24:mi:ss')");
             }
             sql.append(") on ZZDM=tempzzdm and BAIDENTITY=JYIDENTITY");
 
@@ -280,7 +285,7 @@ public class BinganDao {
 
                             StringBuilder s = new StringBuilder();
                             s.append(orgcode)
-                            .append("/thumbnail_")
+                            .append(StringUtils.contains(rs.getString("filename"),"tif")?"/thumbnail_":"/source")
                             .append(rs.getString("guidangpath"))
                             .append('/')
                             .append(filename);
@@ -327,7 +332,7 @@ public class BinganDao {
 
                         StringBuilder s = new StringBuilder();
                         s.append(orgcode)
-                                .append("/thumbnail_")
+                                .append(StringUtils.contains(rs.getString("filename"), "tif") ? "/thumbnail_" : "/source")
                                 .append(rs.getString("guidangpath"))
                                 .append('/')
                                 .append(filename);
@@ -424,6 +429,32 @@ public class BinganDao {
                         }
                     });
         }
+        return bingans;
+    }
+
+    public List<Bingan> queryCommunityBingan(String userid, String password,String requirecount, String startindex) {
+        List<Bingan> bingans = null;
+        String sql = "SELECT BAIDENTITY,ZZDM,ZZNAME,FZJGBSF,BANUM,NAME,CYTIME,stdhospitaloffice_.name_ as cyksname\n" +
+                "from t_ba_base \n" +
+                "left join stdhospitaloffice_ on t_ba_base.zzdm = stdhospitaloffice_.orgcode_ and t_ba_base.cyksbm = stdhospitaloffice_.code_ " +
+                "where BAIDENTITY in("+
+                "select biaoshima from medreccopyings_ " +
+                "where username = '"+userid+"' and userpassword='"+password+"' and  regtime_=( " +
+                "select max(regtime_) from medreccopyings_ " +
+                "where username = '"+userid+"' and userpassword='"+password+"' )"
+                +")"
+//                    +" and (bnbiaoshi1 is null or bnbiaoshi1='00')"
+                +" order by cytime desc,cyksbm"
+                ;
+        String finanSql = DataBaseUtil.buildPage(sql, startindex, requirecount);
+        System.out.println(finanSql);
+        bingans = jdbcTemplate.query(finanSql,
+                new RowMapper<Bingan>() {
+                    @Override
+                    public Bingan mapRow(ResultSet rs, int i) throws SQLException {
+                        return buildBingan(rs);
+                    }
+                });
         return bingans;
     }
 }

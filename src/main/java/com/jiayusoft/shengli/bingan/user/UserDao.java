@@ -83,6 +83,28 @@ public class UserDao {
 //        return users != null && users > 0;
     }
 
+    public UserCommunity checkCommunityUserWithoutOrg(String userid, String password) {
+        List<UserCommunity> users = jdbcTemplate.query(
+                "select PATIENTIDCARD_,PATIENTNAME_ from medreccopyings_ where username = ? and userpassword=? and regtime_=(" +
+                        "select max(regtime_) from medreccopyings_ " +
+                        "where username = ? and userpassword=? )",
+                new String[]{userid, password, userid, password},
+                new RowMapper<UserCommunity>() {
+                    @Override
+                    public UserCommunity mapRow(ResultSet rs, int i) throws SQLException {
+                        UserCommunity userTemp = new UserCommunity();
+                        userTemp.setName(rs.getString("PATIENTNAME_"));
+                        userTemp.setIdcard(rs.getString("PATIENTIDCARD_"));
+                        return userTemp;
+                    }
+                });
+        if (users != null && users.size() > 0) {
+            return users.get(0);
+        }else {
+            return null;
+        }
+//        return users != null && users > 0;
+    }
     public MutablePair<String,String> getLogoAndColor(String orgcode){
         List<MutablePair<String,String>> logoAndColor =
                 jdbcTemplate.query(

@@ -78,6 +78,21 @@ public class BinganController {
         return new BaseResponse<List<Bingan>>(1,null,null);
     }
 
+    @RequestMapping(value = "/community/listwithoutorg", method = RequestMethod.POST)
+    public @ResponseBody BaseResponse getCommunityListWithoutOrg(
+            @RequestParam(value="userid", required=true) String userid,
+            @RequestParam(value="password", required=true) String password,
+            @RequestParam(value="requirecount", required=false, defaultValue="30") String requirecount,
+            @RequestParam(value="startindex", required=false, defaultValue="0") String startindex){
+        log.info(DebugLog.info()+userid + "|||"  + password + "|||"  + "|||" + requirecount + "|||" + startindex);
+        List<Bingan> bingans = new BinganDao(jdbcTemplate)
+                .queryCommunityBingan(userid, password, requirecount, startindex);
+        if (bingans!=null){
+            return new BaseResponse<List<Bingan>>(0,null,bingans);
+        }
+        return new BaseResponse<List<Bingan>>(1,null,null);
+    }
+
     @RequestMapping(value = "/community/detail/{orgcode}/{binganid}", method = RequestMethod.GET)
     public @ResponseBody BaseResponse getDetail(
             @PathVariable String orgcode,
