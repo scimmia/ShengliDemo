@@ -434,17 +434,10 @@ public class BinganDao {
 
     public List<Bingan> queryCommunityBingan(String userid, String password,String requirecount, String startindex) {
         List<Bingan> bingans = null;
-        String sql = "SELECT BAIDENTITY,ZZDM,ZZNAME,FZJGBSF,BANUM,NAME,CYTIME,stdhospitaloffice_.name_ as cyksname\n" +
-                "from t_ba_base \n" +
+        String sql = "SELECT BAIDENTITY,ZZDM,ZZNAME,FZJGBSF,BANUM,NAME,CYTIME,stdhospitaloffice_.name_ as cyksname " +
+                "from t_ba_base " +
                 "left join stdhospitaloffice_ on t_ba_base.zzdm = stdhospitaloffice_.orgcode_ and t_ba_base.cyksbm = stdhospitaloffice_.code_ " +
-                "where BAIDENTITY in("+
-                "select biaoshima from medreccopyings_ " +
-                "where username = '"+userid+"' and userpassword='"+password+"' and  regtime_=( " +
-                "select max(regtime_) from medreccopyings_ " +
-                "where username = '"+userid+"' and userpassword='"+password+"' )"
-                +")"
-//                    +" and (bnbiaoshi1 is null or bnbiaoshi1='00')"
-                +" order by cytime desc,cyksbm"
+                "where idcard = '"+userid+"' order by cytime desc,cyksbm"
                 ;
         String finanSql = DataBaseUtil.buildPage(sql, startindex, requirecount);
         System.out.println(finanSql);

@@ -85,16 +85,13 @@ public class UserDao {
 
     public UserCommunity checkCommunityUserWithoutOrg(String userid, String password) {
         List<UserCommunity> users = jdbcTemplate.query(
-                "select PATIENTIDCARD_,PATIENTNAME_ from medreccopyings_ where username = ? and userpassword=? and regtime_=(" +
-                        "select max(regtime_) from medreccopyings_ " +
-                        "where username = ? and userpassword=? )",
-                new String[]{userid, password, userid, password},
+                "select name_ from cardids_ where cardno_ = ? and password=?",
+                new String[]{userid, password },
                 new RowMapper<UserCommunity>() {
                     @Override
                     public UserCommunity mapRow(ResultSet rs, int i) throws SQLException {
                         UserCommunity userTemp = new UserCommunity();
-                        userTemp.setName(rs.getString("PATIENTNAME_"));
-                        userTemp.setIdcard(rs.getString("PATIENTIDCARD_"));
+                        userTemp.setName(rs.getString("name_"));
                         return userTemp;
                     }
                 });
@@ -109,6 +106,26 @@ public class UserDao {
         List<MutablePair<String,String>> logoAndColor =
                 jdbcTemplate.query(
                         "SELECT PHONEIMG,PHONEZHUTI FROM t_yybs WHERE code ='"+orgcode+"'",
+                        new RowMapper<MutablePair<String, String>>() {
+                            @Override
+                            public MutablePair<String, String> mapRow(ResultSet resultSet, int i) throws SQLException {
+                                MutablePair<String,String> pair = new MutablePair<String,String>();
+                                pair.setLeft(resultSet.getString("PHONEIMG"));
+                                pair.setRight(resultSet.getString("PHONEZHUTI"));
+                                return pair;
+                            }
+                        });
+        if (logoAndColor!=null && logoAndColor.size()>0){
+            return logoAndColor.get(0);
+        }else {
+            return null;
+        }
+    }
+
+    public MutablePair<String,String> getEhrLogoAndColor(){
+        List<MutablePair<String,String>> logoAndColor =
+                jdbcTemplate.query(
+                        "SELECT PHONEIMG,PHONEZHUTI FROM t_ptbs WHERE modelname ='EHR'",
                         new RowMapper<MutablePair<String, String>>() {
                             @Override
                             public MutablePair<String, String> mapRow(ResultSet resultSet, int i) throws SQLException {

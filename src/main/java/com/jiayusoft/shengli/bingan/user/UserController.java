@@ -122,7 +122,6 @@ public class UserController {
     @RequestMapping(value = "/login/communitywithoutorg", method = RequestMethod.POST)
     public @ResponseBody BaseResponse loginCommunityWithoutorg(
             @RequestParam(value="userid", required=true) String userid,
-            @RequestParam(value="orgcode", required=true) String orgcode,
             @RequestParam(value="password", required=false) String password) {
         log.info(DebugLog.info()+userid + "\t---\t" + password);
         BaseResponse<UserCommunity> response;
@@ -132,7 +131,7 @@ public class UserController {
             if (StringUtils.isEmpty(temp.getIdcard()) || temp.getIdcard().length()<6){
                 return new BaseResponse<String>(2,"身份证号不合法，请联系账号分配人员",null);
             }else {
-                MutablePair<String,String> logoAndColor = userDao.getLogoAndColor(orgcode);
+                MutablePair<String,String> logoAndColor = userDao.getEhrLogoAndColor();
                 if (logoAndColor!=null){
                     temp.setLogoName(logoAndColor.getLeft());
                     temp.setLogoColor(logoAndColor.getRight());
