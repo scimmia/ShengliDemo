@@ -21,8 +21,8 @@ public class UserDao {
     }
 
     public UserDoctor checkDoctorUser(String userid, String password,String orgcode) {
-        List<UserDoctor> users = jdbcTemplate.query("SELECT * from t_bnzlys where (idcard=? or yonghuming = ?) and password=? and yyidentiry=?",
-                new String[]{userid,userid,password,orgcode},
+        List<UserDoctor> users = jdbcTemplate.query("SELECT * from t_bnzlys where (upper(idcard)=? or upper(yonghuming) = ?) and password=? and yyidentiry=?",
+                new String[]{userid.toUpperCase(),userid.toUpperCase(),password,orgcode},
                 new RowMapper<UserDoctor>() {
                     @Override
                     public UserDoctor mapRow(ResultSet rs, int i) throws SQLException {
@@ -85,13 +85,14 @@ public class UserDao {
 
     public UserCommunity checkCommunityUserWithoutOrg(String userid, String password) {
         List<UserCommunity> users = jdbcTemplate.query(
-                "select name_ from cardids_ where cardno_ = ? and password=?",
-                new String[]{userid, password },
+                "select name_,cardno_ from cardids_ where (upper(cardno_)=? or upper(username) = ?) and password=?",
+                new String[]{userid.toUpperCase(), userid.toUpperCase(), password },
                 new RowMapper<UserCommunity>() {
                     @Override
                     public UserCommunity mapRow(ResultSet rs, int i) throws SQLException {
                         UserCommunity userTemp = new UserCommunity();
                         userTemp.setName(rs.getString("name_"));
+                        userTemp.setIdcard(rs.getString("cardno_"));
                         return userTemp;
                     }
                 });
