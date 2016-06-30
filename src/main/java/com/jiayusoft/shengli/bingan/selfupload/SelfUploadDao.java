@@ -108,6 +108,43 @@ public class SelfUploadDao {
         return result;
     }
 
+    public List<SelfUpload> querySelfList(String idcard,Integer uploadtype, String startindex) {
+        List<SelfUpload> result = null;
+        if (StringUtils.isNoneBlank(idcard, startindex)){
+            String finanSql = DataBaseUtil.buildPage(
+                    "select * from t_ba_mobile_self_describe " +
+                            "where idcard='" + idcard + "' and UPLOADTYPE=" +uploadtype +
+                            " order by UPLOADTIME desc",
+                    startindex, null);
+            System.out.println(finanSql);
+            result = jdbcTemplate.query(finanSql,
+                    new RowMapper<SelfUpload>() {
+                        @Override
+                        public SelfUpload mapRow(ResultSet rs, int rowNum) throws SQLException {
+                            SelfUpload selfUpload = new SelfUpload();
+                            selfUpload.setSerialNum(rs.getString("SERIAL_NUM"));
+                            selfUpload.setIdCard(rs.getString("IDCARD"));
+                            selfUpload.setOrgCode(rs.getString("ORG_CODE"));
+                            selfUpload.setDescribe(rs.getString("SELFDESCRIBE"));
+                            Timestamp t = rs.getTimestamp("UPLOADTIME");
+                            selfUpload.setUploadTime(FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss").format(t.getTime()));
+                            return selfUpload;
+                        }
+                    });
+            if (result!=null){
+                for (SelfUpload selfUpload : result){
+                    List<String> temp = querySelfDetail(selfUpload.getSerialNum());
+                    if (temp!=null) {
+                        selfUpload.getFileNames().addAll(temp);
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+
     public List<String> querySelfDetail(String serialNum) {
         return jdbcTemplate.query(
                 "select FILENAME from t_ba_mobile_self_file where SERIAL_NUM ='"+serialNum+"'",

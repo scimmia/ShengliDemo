@@ -42,6 +42,20 @@ public class SelfUploadController {
         }
     }
 
+    @RequestMapping(value="/uploadwithoutorg", method=RequestMethod.POST)
+    public @ResponseBody String uploadSelfDescribeWithoutOrg(
+            @RequestParam(value="idcard", required=true) String idcard,
+            @RequestParam(value="selfdescribe", required=true) String selfDescribe,
+            @RequestParam(value="uploadtype", required=true) Integer uploadtype){
+        log.info(DebugLog.info()+"selfdescribe:" + selfDescribe);
+        String id = new SelfUploadDao(jdbcTemplate).insertDescribe(idcard,"",selfDescribe, uploadtype);
+        if (StringUtils.isNotEmpty(id)){
+            return id;
+        }else {
+            return "failed";
+        }
+    }
+
     @RequestMapping(value="/upload/file", method=RequestMethod.POST)
     public @ResponseBody String uploadSelfFile(
             @RequestParam(value="idcard", required=true) String idcard,
@@ -84,6 +98,20 @@ public class SelfUploadController {
             @PathVariable String startindex){
         log.info(DebugLog.info()+orgcode+'\t'+idcard+'\t'+startindex);
         List<SelfUpload> temp = new SelfUploadDao(jdbcTemplate).querySelfList(orgcode, idcard, uploadtype, startindex);
+        if (temp!=null){
+            return new BaseResponse<List<SelfUpload>>(0,null,temp);
+        }else {
+            return new BaseResponse<List<SelfUpload>>(1,"信息异常，无法查看", null);
+        }
+    }
+
+    @RequestMapping(value = "/list/{idcard}/{uploadtype}/{startindex}", method = RequestMethod.GET)
+    public @ResponseBody BaseResponse getHealthCheckListWithoutOrg(
+            @PathVariable String idcard,
+            @PathVariable Integer uploadtype,
+            @PathVariable String startindex){
+        log.info(DebugLog.info()+'\t'+idcard+'\t'+startindex);
+        List<SelfUpload> temp = new SelfUploadDao(jdbcTemplate).querySelfList(idcard, uploadtype, startindex);
         if (temp!=null){
             return new BaseResponse<List<SelfUpload>>(0,null,temp);
         }else {

@@ -128,16 +128,12 @@ public class UserController {
         UserDao userDao = new UserDao(jdbcTemplate);
         UserCommunity temp = userDao.checkCommunityUserWithoutOrg(userid, password);
         if (temp != null){
-            if (StringUtils.isEmpty(temp.getIdcard()) || temp.getIdcard().length()<6){
-                return new BaseResponse<String>(2,"身份证号不合法，请联系账号分配人员",null);
-            }else {
-                MutablePair<String,String> logoAndColor = userDao.getEhrLogoAndColor();
-                if (logoAndColor!=null){
-                    temp.setLogoName(logoAndColor.getLeft());
-                    temp.setLogoColor(logoAndColor.getRight());
-                }
-                response = new BaseResponse<UserCommunity>(0, null, temp);
+            MutablePair<String,String> logoAndColor = userDao.getEhrLogoAndColor();
+            if (logoAndColor!=null){
+                temp.setLogoName(logoAndColor.getLeft());
+                temp.setLogoColor(logoAndColor.getRight());
             }
+            response = new BaseResponse<UserCommunity>(0, null, temp);
         }else {
             response = new BaseResponse<UserCommunity>(1,"用户名密码错误",null);
         }
