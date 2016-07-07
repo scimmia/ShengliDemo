@@ -3,6 +3,7 @@ package com.jiayusoft.shengli.bingan.selfupload;
 import com.jiayusoft.shengli.bingan.Application;
 import com.jiayusoft.shengli.bingan.utils.BaseResponse;
 import com.jiayusoft.shengli.bingan.utils.DebugLog;
+import com.jiayusoft.shengli.bingan.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
@@ -49,6 +50,20 @@ public class SelfUploadController {
             @RequestParam(value="uploadtype", required=true) Integer uploadtype){
         log.info(DebugLog.info()+"selfdescribe:" + selfDescribe);
         String id = new SelfUploadDao(jdbcTemplate).insertDescribe(idcard,"",selfDescribe, uploadtype);
+        if (StringUtils.isNotEmpty(id)){
+            return id;
+        }else {
+            return "failed";
+        }
+    }
+
+    @RequestMapping(value="/uploadioswithoutorg", method=RequestMethod.POST)
+    public @ResponseBody String uploadIOSSelfDescribeWithoutOrg(
+            @RequestParam(value="idcard", required=true) String idcard,
+            @RequestParam(value="selfdescribe", required=true) String selfDescribe,
+            @RequestParam(value="uploadtype", required=true) Integer uploadtype){
+        log.info(DebugLog.info()+"selfdescribe:" + selfDescribe+"|--" + Utils.getBase64Data(selfDescribe) + "--|");
+        String id = new SelfUploadDao(jdbcTemplate).insertDescribe(idcard,"", Utils.getBase64Data(selfDescribe), uploadtype);
         if (StringUtils.isNotEmpty(id)){
             return id;
         }else {
