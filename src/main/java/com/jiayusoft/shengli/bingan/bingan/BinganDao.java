@@ -73,6 +73,75 @@ public class BinganDao {
         }
         return bingans;
     }
+
+    public String getGLKS(String userid, String orgcode) {
+        List<String> users = jdbcTemplate.query("SELECT glksbm from t_bnzlys where (upper(idcard)=? ) and yyidentiry=?",
+                new String[]{userid.toUpperCase(),orgcode},
+                new RowMapper<String>() {
+                    @Override
+                    public String mapRow(ResultSet rs, int i) throws SQLException {
+                        return rs.getString("glksbm");
+                    }
+                });
+        if (users != null && users.size() != 0) {
+            return users.get(0);
+        }else {
+            return null;
+        }
+    }
+
+    public List<Bingan> queryIOSBingan(String userid, String orgcode, String binganhao, String shenfenzhengid, String
+            xingming,String chaxunleibie, String chuyuanriqibegin, String chuyuanriqiend,String keshibianma, String requirecount, String startindex) {
+        List<Bingan> bingans = null;
+        if (StringUtils.isNotEmpty(orgcode)){
+            if (!StringUtils.equalsIgnoreCase(chaxunleibie,"2")){
+                keshibianma = getGLKS(userid,orgcode);
+            }
+
+            StringBuilder sql = new StringBuilder(
+                    "SELECT BAIDENTITY,ZZDM,ZZNAME,FZJGBSF,BANUM,NAME,CYTIME,stdhospitaloffice_.name_ as cyksname\n" +
+                            "from t_ba_base \n" +
+                            "left join stdhospitaloffice_ on t_ba_base.zzdm = stdhospitaloffice_.orgcode_ and t_ba_base.cyksbm = stdhospitaloffice_.code_ where zzdm='");
+//            StringBuilder sql = new StringBuilder("SELECT * from t_ba_base where zzdm='");
+            sql.append(orgcode).append('\'');
+            if (StringUtils.isNotEmpty(binganhao)){
+                sql.append(" and banum='").append(binganhao).append('\'');
+            }
+            if (StringUtils.isNotEmpty(shenfenzhengid)){
+                sql.append(" and idcard='").append(shenfenzhengid).append('\'');
+            }
+            if (StringUtils.isNotEmpty(xingming)){
+                sql.append(" and name='").append(xingming).append('\'');
+            }
+            if (StringUtils.isNotEmpty(chuyuanriqibegin)){
+                sql.append(" and cytime>=to_date('").append(chuyuanriqibegin).append(" 00:00:00','YYYY-MM-DD hh24:mi:ss')");
+            }
+            if (StringUtils.isNotEmpty(chuyuanriqiend)){
+                sql.append(" and cytime<=to_date('").append(chuyuanriqiend).append(" 23:59:59','YYYY-MM-DD hh24:mi:ss')");
+            }
+            sql.append(" and (bnbiaoshi1 is null or bnbiaoshi1='00')");
+            if (StringUtils.isNotEmpty(keshibianma)){
+                sql.append(" and cyksbm in ('");
+                sql.append(StringUtils.replace(keshibianma,",","','"));
+                sql.append("')");
+            }else if(!StringUtils.equals(chaxunleibie,"2")){
+                sql.append(" and t_ba_base.id in (select zblsh from T_Bnzrr where zrridcard ='");
+                sql.append(userid);
+                sql.append("' group by zblsh)");
+            }
+            sql.append(" order by cytime desc,cyksbm");
+            String finanSql = DataBaseUtil.buildPage(sql.toString(), startindex, requirecount);
+            System.out.println(finanSql);
+            bingans = jdbcTemplate.query(finanSql,
+                    new RowMapper<Bingan>() {
+                        @Override
+                        public Bingan mapRow(ResultSet rs, int i) throws SQLException {
+                            return buildBingan(rs);
+                        }
+                    });
+        }
+        return bingans;
+    }
     Bingan buildBingan(ResultSet rs) throws SQLException {
         Bingan bingan = new Bingan(rs.getString("BAIDENTITY"));
         bingan.setBinganhao(rs.getString("BANUM"));

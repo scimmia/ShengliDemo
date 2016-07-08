@@ -41,7 +41,7 @@ public class IOSBinganController {
                 xingming + "|--" + Utils.getBase64Data(xingming) + "--|" +chaxunleibie + "|||" + chuyuanriqibegin + "|||" + chuyuanriqiend + "|||" + keshibianma + "|||"
                 + requirecount + "|||" + startindex);
         if (new UserDao(jdbcTemplate).isDoctorUserExists(userid, orgcode)){
-            List<Bingan> bingans = new BinganDao(jdbcTemplate).queryBingan(userid, orgcode, binganhao, shenfenzhengid,
+            List<Bingan> bingans = new BinganDao(jdbcTemplate).queryIOSBingan(userid, orgcode, binganhao, shenfenzhengid,
                     Utils.getBase64Data(xingming), chaxunleibie,chuyuanriqibegin, chuyuanriqiend, keshibianma, requirecount,startindex);
             return new BaseResponse<List<Bingan>>(0,null,bingans);
         }
