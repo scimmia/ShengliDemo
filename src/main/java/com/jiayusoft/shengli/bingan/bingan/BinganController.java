@@ -3,6 +3,7 @@ package com.jiayusoft.shengli.bingan.bingan;
 import com.jiayusoft.shengli.bingan.user.UserDao;
 import com.jiayusoft.shengli.bingan.utils.BaseResponse;
 import com.jiayusoft.shengli.bingan.utils.DebugLog;
+import com.jiayusoft.shengli.bingan.utils.Utils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,30 @@ public class BinganController {
         if (new UserDao(jdbcTemplate).isDoctorUserExists(userid, orgcode)){
             List<Bingan> bingans = new BinganDao(jdbcTemplate).queryBingan(userid, orgcode, binganhao, shenfenzhengid,
                     xingming, chaxunleibie,chuyuanriqibegin, chuyuanriqiend, keshibianma, requirecount,startindex);
+            return new BaseResponse<List<Bingan>>(0,null,bingans);
+        }
+        return new BaseResponse<List<Bingan>>(1,null,null);
+    }
+
+    @RequestMapping(value = "/iosdoctor/list", method = RequestMethod.POST)
+    public @ResponseBody BaseResponse getIOSNormalList(
+            @RequestParam(value="userid", required=true) String userid,
+            @RequestParam(value="orgcode", required=true) String orgcode,
+            @RequestParam(value="binganhao", required=false) String binganhao,
+            @RequestParam(value="shenfenzhengid", required=false) String shenfenzhengid,
+            @RequestParam(value="xingming", required=false) String xingming,
+            @RequestParam(value="chaxunleibie", required=false) String chaxunleibie,
+            @RequestParam(value="chuyuanriqibegin", required=false) String chuyuanriqibegin,
+            @RequestParam(value="chuyuanriqiend", required=false) String chuyuanriqiend,
+            @RequestParam(value="keshibianma", required=false) String keshibianma,
+            @RequestParam(value="requirecount", required=false, defaultValue="30") String requirecount,
+            @RequestParam(value="startindex", required=false, defaultValue="0") String startindex){
+        log.info(DebugLog.info()+userid + "|||" + orgcode + "|||" + binganhao + "|||" + shenfenzhengid + "|||" +
+                xingming + "|--" + Utils.getBase64Data(xingming) + "--|" +chaxunleibie + "|||" + chuyuanriqibegin + "|||" + chuyuanriqiend + "|||" + keshibianma + "|||"
+                + requirecount + "|||" + startindex);
+        if (new UserDao(jdbcTemplate).isDoctorUserExists(userid, orgcode)){
+            List<Bingan> bingans = new BinganDao(jdbcTemplate).queryBingan(userid, orgcode, binganhao, shenfenzhengid,
+                    Utils.getBase64Data(xingming), chaxunleibie,chuyuanriqibegin, chuyuanriqiend, keshibianma, requirecount,startindex);
             return new BaseResponse<List<Bingan>>(0,null,bingans);
         }
         return new BaseResponse<List<Bingan>>(1,null,null);
